@@ -371,3 +371,5 @@ Application Load Balancer (host-based routing)
 ---
 
 *This document provides a high-level view of the IntraWorX platform architecture. For detailed technical specifications, refer to the Comprehensive Architecture Document.*
+
+**Documents created by:** Tinashe Zvihwati

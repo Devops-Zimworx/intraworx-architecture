@@ -931,4 +931,4 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 
 ---
 
-*Document generated from infrastructure-as-code analysis of the IntraWorX Terraform repository and source code review of all platform microservices.*
+**Document created by:** Tinashe Zvihwati
