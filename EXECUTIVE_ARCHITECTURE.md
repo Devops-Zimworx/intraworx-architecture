@@ -21,7 +21,7 @@ Every employee logs in once through Google and immediately has access to the ser
 | **Cloud Provider** | Amazon Web Services (us-west-2, Oregon) |
 | **Domain** | `intraworx.cloud` |
 | **Authentication** | Google Single Sign-On via AWS Cognito |
-| **Total Services** | 17 microservices + IoT hardware |
+| **Total Services** | 16 microservices + IoT hardware |
 | **Infrastructure** | 100% containerized, Terraform-managed |
 | **Operating Countries** | Zimbabwe, Zambia, Costa Rica, Rwanda, US |
 
@@ -30,36 +30,66 @@ Every employee logs in once through Google and immediately has access to the ser
 ## How It Works — The Big Picture
 
 ```
-                          ┌─────────────────────────┐
-                          │       EMPLOYEES          │
-                          │  (Browser / Mobile)      │
-                          └────────────┬────────────┘
-                                       │
-                               Google Sign-In
-                                       │
-                          ┌────────────▼────────────┐
-                          │     IntraWorX Portal     │
-                          │    intraworx.cloud       │
-                          │                          │
-                          │  ● Service Dashboard     │
-                          │  ● Role-Based Access     │
-                          │  ● Internal Modules      │
-                          └────────────┬────────────┘
-                                       │
-            ┌──────────┬───────────┬───┴────┬──────────┬──────────┐
-            ▼          ▼           ▼        ▼          ▼          ▼
-      ┌──────────┐┌────────┐┌─────────┐┌────────┐┌────────┐┌─────────┐
-      │ Employee ││Wellness││ Shuttle ││  Café  ││Seating ││Analytics│
-      │    HR    ││ Clinic ││Transport││The Grind││  Map   ││& Reports│
-      └──────────┘└────────┘└─────────┘└────────┘└────────┘└─────────┘
-            │                    ▲
-            │               ┌───┘
-            ▼               │
-      ┌──────────┐   ┌──────────┐
-      │  Shared  │   │   IoT    │
-      │ Database │   │  RFID    │
-      │  (AWS)   │   │ Readers  │
-      └──────────┘   └──────────┘
+                           ┌─────────────────────────┐
+                           │       EMPLOYEES           │
+                           │   (Browser / Mobile)      │
+                           └────────────┬────────────┘
+                                        │
+                                Google Sign-In
+                                        │
+                           ┌────────────▼────────────┐
+                           │    IntraWorX Portal        │
+                           │   intraworx.cloud          │
+                           │                            │
+                           │  ● Service Dashboard        │
+                           │  ● Role-Based Access        │
+                           │                            │
+                           │  ┌───── INTERNAL MODULES ─┐  │
+                           │  │ Client Success       │  │
+                           │  │ FunWorX (Events)     │  │
+                           │  │ Wellness Associates  │  │
+                           │  │ Philanthropy         │  │
+                           │  │ Facilities Mgmt      │  │
+                           │  │ Admin Console        │  │
+                           │  └──────────────────────┘  │
+                           └───────┬─────────────┬─────┘
+                                   │             │
+                     JWT to services │       Fastify API
+                                   │             │
+        ┌──────────┬──────────┼──────────┐  │
+        ▼          ▼          ▼          ▼  ▼
+  ┌──────────┐┌─────────┐┌────────┐┌───────────────────┐
+  │ Wellness ││ Shuttle ││  Café  ││ IntraWorX Backend │
+  │  Center  ││Transport││The Grind││ (Prisma + DB)     │
+  └────┬─────┘└───┬─────┘└────┬───┘└─────────┬─────────┘
+       │         │         │             │
+       ▼         ▼         ▼             ▼
+  ┌─────────┐┌─────────┐┌─────────┐┌───────────────┐
+  │TeamEase ││ Seating ││ DailyFl.││  More Services  │
+  │Onboard  ││   Map   ││ Reports ││  (see catalog)  │
+  └────┬────┘└────┬────┘└────┬────┘└───────┬───────┘
+       │         │         │             │
+       └─────────┴─────────┴─────────────┘
+                         │
+                         ▼
+            ┌──────────────────────────────┐
+            │    EMPLOYEES SERVICE (Hub)    │  ◄── All services call this
+            │  Employee records, org chart,  │      for employee data
+            │  departments, multi-country    │
+            └───────────────┬──────────────┘
+                              │
+               ┌─────────────┴─────────────┐
+               ▼                             ▼
+  ┌───────────────────────┐   ┌──────────────┐
+  │  Shared RDS PostgreSQL  │   │ Redis Cache  │
+  │ (isolated DBs per svc)  │   │ (sessions)   │
+  └───────────────────────┘   └──────────────┘
+
+  IoT Layer:
+  ┌─────────────────┐
+  │ TapCard ESP32   │  RFID readers in shuttles
+  │ (IoT Hardware)  │  tap → encrypted → Shuttle API
+  └─────────────────┘
 ```
 
 ---
@@ -77,11 +107,10 @@ Every employee logs in once through Google and immediately has access to the ser
 
 | Service | What It Does | Domain |
 |---------|-------------|--------|
-| **Wellness Center Clinic** | Medical records, appointments, pharmacy, patient management | `clinic.intraworx.cloud` |
+| **Wellness Center** | Medical records, appointments, pharmacy, patient management | `clinic.intraworx.cloud` |
 | **Shuttle Management** | Transport booking, RFID boarding, route management, automated billing | `shuttle.intraworx.cloud` |
 | **The Grind** | Internal café — menu, POS orders, inventory, promotions | `thegrind.intraworx.cloud` |
 | **TeamEase** | Employee onboarding workflows (mobile-first, works offline) | `teamease.intraworx.cloud` |
-| **Workplace Wellness** | Wellness programs, counseling, engagement tracking | `wellness.intraworx.cloud` |
 
 ### Internal Modules (within Auth Portal)
 
@@ -156,10 +185,11 @@ Every employee logs in once through Google and immediately has access to the ser
 | Pattern | Description |
 |---------|-------------|
 | **SSO Token Passing** | Auth Portal passes JWT to services via URL; services validate against Cognito |
-| **REST API Calls** | Services call each other over HTTPS (e.g., Clinic → Employees Service) |
+| **REST API Calls** | Services call each other over HTTPS (e.g., Clinic → Employees Service, BusyBee → Employees Service) |
 | **Event-Driven Notifications** | SNS → SQS → Lambda → SES email pipeline for cross-service notifications |
 | **IoT → API** | ESP32 devices send encrypted RFID data to Shuttle backend over HTTPS |
 | **Shared Database** | All services share one PostgreSQL RDS instance, but each has its own isolated database |
+| **External Data Stores** | BusyBee (Supabase), CorePTO (Neon), BeeCompliant (Google Sheets) use external DBs but still consume Employees Service |
 
 ---
 
@@ -195,11 +225,11 @@ Every employee logs in once through Google and immediately has access to the ser
 
 | Item | Monthly |
 |------|---------|
-| **Total Budget** | $175 |
-| **EC2/ECS (Compute)** | ~$70 (40%) |
-| **RDS (Database)** | ~$52 (30%) |
-| **ElastiCache (Redis)** | ~$18 (10%) |
-| **Other (S3, CloudFront, etc.)** | ~$35 (20%) |
+| **Total Forecast** | $893 |
+| **EC2/ECS (Compute)** | ~$357 (40%) |
+| **RDS (Database)** | ~$268 (30%) |
+| **ElastiCache (Redis)** | ~$89 (10%) |
+| **Other (S3, CloudFront, etc.)** | ~$179 (20%) |
 
 Cost optimization through Spot instances for non-critical services and ARM-based (Graviton) compute.
 
@@ -210,11 +240,10 @@ Cost optimization through Spot instances for non-critical services and ARM-based
 | Partner | Used For |
 |---------|----------|
 | **Google** | Authentication (OAuth), Sheets API (reports), Drive API (documents), Gemini AI (compliance) |
-| **HubSpot** | CRM data for client analytics and sales reporting |
+| **HubSpot** | CRM data for client analytics, sales reporting, and daily flash reports |
 | **Freshservice** | IT ticketing system — data source for AI support agent |
 | **OpenAI / Claude** | AI-powered IT ticket analysis and resolution |
 | **Supabase** | External database backend for BusyBee ERP |
-| **Odoo** | ERP data for DailyFlash reporting |
 | **Calendly** | Meeting scheduling integration |
 
 ---
@@ -238,9 +267,9 @@ Example: An employee with groups `SHUTTLE_User` and `GRIND_User` can use Shuttle
 
 | Strength | Detail |
 |----------|--------|
-| **Unified Identity** | Single Google login provides seamless access to 17+ services |
+| **Unified Identity** | Single Google login provides seamless access to 16+ services |
 | **Service Isolation** | Each service has its own database, codebase, and deployment pipeline |
-| **Cost Efficiency** | ARM Graviton processors + Spot instances keep budget under $175/month for 17+ services |
+| **Cost Efficiency** | ARM Graviton processors + Spot instances keep costs optimized at ~$893/month for 16+ services |
 | **Security Depth** | 7 layers of security from edge (WAF) to data (KMS encryption) |
 | **Infrastructure as Code** | Entire platform reproducible from Terraform — consistent, auditable, version-controlled |
 | **Multi-Country** | Built for global operations across 5 countries |
@@ -260,8 +289,8 @@ Application Load Balancer (host-based routing)
     │
     ├── intraworx.cloud ──────────────▶ Auth Portal (Nuxt 3)
     ├── employees.intraworx.cloud ────▶ Employees Service (Django)
-    ├── clinic.intraworx.cloud ───────▶ WCC Frontend (Nuxt 3)
-    ├── api.clinic.intraworx.cloud ───▶ WCC Backend (Django)
+    ├── clinic.intraworx.cloud ───────▶ Wellness Center Frontend (Nuxt 3)
+    ├── api.clinic.intraworx.cloud ───▶ Wellness Center Backend (Django)
     ├── shuttle.intraworx.cloud ──────▶ Shuttle Frontend (Nuxt 3)
     ├── api.shuttle.intraworx.cloud ──▶ Shuttle Backend (Fastify)
     ├── thegrind.intraworx.cloud ─────▶ Grind Frontend (React)
@@ -271,7 +300,6 @@ Application Load Balancer (host-based routing)
     ├── zimstat.intraworx.cloud ──────▶ ZimStat (Nuxt 4)
     ├── beecompliant.intraworx.cloud ─▶ BeeCompliant (React)
     ├── dailyflash.intraworx.cloud ───▶ DailyFlash Frontend (Nuxt 3)
-    ├── wellness.intraworx.cloud ─────▶ WPW Frontend (Nuxt 3)
     ├── teamease.intraworx.cloud ─────▶ TeamEase (Nuxt 3 PWA)
     └── busybee.intraworx.cloud ──────▶ BusyBee (React)
     

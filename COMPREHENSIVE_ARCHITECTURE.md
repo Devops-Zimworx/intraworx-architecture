@@ -153,7 +153,7 @@ Access control is driven entirely by **Cognito User Groups**. Each group maps to
 | Employees | `EMP_Full` | `EMP_Manager` | `EMP_User` |
 | Shuttle | `SHUTTLE_Full` | `SHUTTLE_Manager` | `SHUTTLE_User` |
 | The Grind | `GRIND_Full` | `GRIND_Manager` | `GRIND_User` |
-| Wellness Clinic | `WCC_Full` | `WCC_Manager` | `WCC_User` |
+| Wellness Center | `WCC_Full` | `WCC_Manager` | `WCC_User` |
 | Seating Map | `SEATING_MAP_Full` | `SEATING_MAP_Manager` | `SEATING_MAP_User` |
 | CheetahHub | `CHEETAH_Full` | `CHEETAH_Manager` | `CHEETAH_User` |
 | ZimStat | `ZIM_Full` | `ZIM_Manager` | `ZIM_User` |
@@ -307,12 +307,12 @@ The Auth Portal is the **central nervous system** — both the SSO gateway and t
 
 The **foundational service** consumed by virtually every other microservice. Manages employee lifecycle, organizational structure, departments, skills, documents, and multi-country operations (US, Costa Rica, Rwanda, Zambia, Zimbabwe). Integrates with Cognito JWT auth with auto-provisioning.
 
-### 6.3 Wellness Center Clinic
+### 6.3 Wellness Center
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
-| **WCC Frontend** | Nuxt 3, Vue 3, TypeScript, Tailwind CSS, Pinia | 3000 | `clinic.intraworx.cloud` |
-| **WCC Microservice** | Django 3.2+, DRF, PostgreSQL, Redis, Celery | 8000 | `api.clinic.intraworx.cloud` |
+| **Wellness Center Frontend** | Nuxt 3, Vue 3, TypeScript, Tailwind CSS, Pinia | 3000 | `clinic.intraworx.cloud` |
+| **Wellness Center Microservice** | Django 3.2+, DRF, PostgreSQL, Redis, Celery | 8000 | `api.clinic.intraworx.cloud` |
 
 HIPAA-compliant medical records, appointments, patient management, pharmacy/inventory, visit tracking, follow-up reminders. Calls `employees-service` with circuit breaker pattern.
 
@@ -343,16 +343,7 @@ Internal café management — menu, POS sales, inventory, stock movements, promo
 
 Internal Google Drive file viewer — fetches/embeds documents from Google Drive folders without requiring user auth to Google. Uses service account for server-side access.
 
-### 6.7 Workplace Wellness Program (WPW)
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **WPW Frontend** | Nuxt 3, Vue 3, TypeScript, Tailwind CSS, Pinia | 3000 | `wellness.intraworx.cloud` |
-| **WPW Microservice** | Django 3.2+, DRF, PostgreSQL, Redis | 8000 | `api.wellness.intraworx.cloud` |
-
-Employee wellness programs, counseling sessions, engagement tracking, philanthropic programs. Multi-country support (Zimbabwe, Zambia, Costa Rica). Calls `employees-service` for employee data.
-
-### 6.8 Automated Seating Map (Project Atlas)
+### 6.7 Automated Seating Map (Project Atlas)
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -361,16 +352,16 @@ Employee wellness programs, counseling sessions, engagement tracking, philanthro
 
 Multi-site seating management — floor layouts, zones, clusters, seats, team assignments, work schedules across Zimbabwe, Zambia, Costa Rica.
 
-### 6.9 DailyFlash
+### 6.8 DailyFlash
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
 | **DailyFlash Backend** | Django, DRF, PostgreSQL, Celery, Redis | 8000 | `api.dailyflash.intraworx.cloud` |
 | **DailyFlash Frontend** | Nuxt 3, Vue 3, Tailwind CSS | 3000 | `dailyflash.intraworx.cloud` |
 
-Aggregates data from Google Sheets and Odoo ERP, generates daily flash reports with automated PDF email distribution.
+Aggregates data from Google Sheets and HubSpot CRM, generates daily flash reports with automated PDF email distribution.
 
-### 6.10 ZimStat
+### 6.9 ZimStat
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -378,7 +369,7 @@ Aggregates data from Google Sheets and Odoo ERP, generates daily flash reports w
 
 Client demographics dashboard with US heat map visualization. Pulls data from HubSpot CRM via server-side API.
 
-### 6.11 Buzz AI
+### 6.10 Buzz AI
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -387,31 +378,31 @@ Client demographics dashboard with US heat map visualization. Pulls data from Hu
 
 AI-powered IT support agent — learns from Freshservice knowledge base, performs ticket classification and solution generation with continuous learning from feedback. Uses OpenAI and Claude LLMs.
 
-### 6.12 BusyBee Hive ERP
+### 6.11 BusyBee Hive ERP
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
 | **BusyBee** | React 18, TypeScript, Tailwind CSS, Supabase | 3000 | `busybee.intraworx.cloud` |
 
-Comprehensive ERP for client relationships, team members, training, attendance, performance, PTO, offboarding, attrition analytics, sales reports. Uses **Supabase** as backend (external PostgreSQL, not on platform RDS). HubSpot CRM sync.
+Comprehensive ERP for client relationships, team members, training, attendance, performance, PTO, offboarding, attrition analytics, sales reports. Uses **Supabase** as backend (external PostgreSQL, not on platform RDS). HubSpot CRM sync. Consumes `employees-service` for employee data.
 
-### 6.13 BeeCompliant
+### 6.12 BeeCompliant
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
 | **BeeCompliant** | React 19, TypeScript, Vite, Tailwind CSS | 3000 | `beecompliant.intraworx.cloud` |
 
-Mobile device compliance tracking — manages approved device lists, generates PDF compliance reports. Reads data from published Google Sheets. Uses Google Gemini AI for insights.
+Mobile device compliance tracking — manages approved device lists, generates PDF compliance reports. Reads data from published Google Sheets. Uses Google Gemini AI for insights. Consumes `employees-service` for employee data.
 
-### 6.14 CorePTO
+### 6.13 CorePTO
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
 | **CorePTO** | Node.js | 3000 | `corepto.intraworx.cloud` |
 
-PTO request automation — digital form submission, real-time balance display, client approval workflows, auto-generated payroll documents, Google Sheets sync. Uses external **Neon PostgreSQL** database.
+PTO request automation — digital form submission, real-time balance display, client approval workflows, auto-generated payroll documents, Google Sheets sync. Uses external **Neon PostgreSQL** database. Consumes `employees-service` for employee data.
 
-### 6.15 TeamEase
+### 6.14 TeamEase
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -419,7 +410,7 @@ PTO request automation — digital form submission, real-time balance display, c
 
 Mobile-first PWA for employee onboarding workflows. Offline-capable for unreliable networks. Calls `employees-service` onboarding API. Sentry error tracking.
 
-### 6.16 PayrollGuard
+### 6.15 PayrollGuard
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -428,7 +419,7 @@ Mobile-first PWA for employee onboarding workflows. Offline-capable for unreliab
 
 Secure payroll data backup — auto-syncs from on-premise Windows systems to AWS S3 with AES-256 encryption, versioning, audit logging. Google SSO via Cognito.
 
-### 6.17 TapCard System (IoT)
+### 6.16 TapCard System (IoT)
 
 | Component | Stack | Domain |
 |-----------|-------|--------|
@@ -436,7 +427,7 @@ Secure payroll data backup — auto-syncs from on-premise Windows systems to AWS
 
 Hardware firmware for RFID card readers installed in shuttles. Employees tap cards; data is hashed (SHA256 + salt) and sent via HTTPS to the Shuttle Management backend. WiFi-based with offline resilience.
 
-### 6.18 IntraWorX Notifications Service
+### 6.17 IntraWorX Notifications Service
 
 | Component | Details |
 |-----------|---------|
@@ -472,8 +463,8 @@ Each service gets an isolated database with a dedicated app user (least-privileg
 | Database | Service |
 |----------|---------|
 | `employees` | Employees Service |
-| `wellness` | Workplace Wellness (WPW) |
-| `clinic` | Wellness Center Clinic (WCC) |
+| `wellness` | Wellness Center |
+| `clinic` | Wellness Center Clinic |
 | `intraworx_backend` | IntraWorX Backend (Fastify/Prisma) |
 | `cheetahhub` | CheetahHub |
 | `shuttle_management` | Shuttle Management |
@@ -754,7 +745,6 @@ Terraform Plan → PR Review → Terraform Apply
 | **Google Gemini** | BeeCompliant | AI-powered compliance insights |
 | **Supabase** | BusyBee | External database + auth + realtime |
 | **Neon PostgreSQL** | CorePTO | Serverless external database |
-| **Odoo ERP** | DailyFlash | Enterprise resource planning data |
 | **Calendly** | DailyFlash | Meeting scheduling |
 | **AWS SES** | Platform-wide | Transactional email |
 
@@ -785,8 +775,8 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 
 | Setting | Value |
 |---------|-------|
-| Monthly Budget | $175 |
-| Budget Allocation | RDS 30%, EC2 40%, ElastiCache 10% |
+| Monthly Forecast | $893 |
+| Budget Allocation | RDS 30%, EC2 40%, ElastiCache 10%, Other 20% |
 | Alert Thresholds | 80%, 90%, 100% actual + 100% forecasted |
 | Notifications | `devops@zimworx.com` |
 | Cost & Usage Reports | Enabled (S3) |
@@ -797,41 +787,77 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 ## 15. Inter-Service Communication Map
 
 ```
-                    ┌──────────────────────────────┐
-                    │       Auth Portal (SSO)       │
-                    │      intraworx.cloud          │
-                    └──────────┬───────────────────┘
-                               │ JWT tokens
-          ┌────────────────────┼─────────────────────────┐
-          │                    │                          │
-          ▼                    ▼                          ▼
-  ┌───────────────┐   ┌──────────────┐          ┌───────────────┐
-  │   Employees   │   │ IntraWorX    │          │   External    │
-  │   Service     │◄──│  Backend     │          │  Microservices│
-  │ (Foundation)  │   │ (Fastify)    │          │               │
-  └───────┬───────┘   └──────────────┘          └───────────────┘
-          │                                              │
-          │  ◄──── consumed by ────────────────────────── │
-          │                                              │
-    ┌─────┼─────────┬───────────┬──────────┬─────────┐
-    │     │         │           │          │         │
-    ▼     ▼         ▼           ▼          ▼         ▼
-┌──────┐┌──────┐┌────────┐┌────────┐┌────────┐┌────────┐
-│ WCC  ││ WPW  ││Shuttle ││ Grind  ││TeamEase││ Seating│
-│Clinic││Welln.││Mgmt    ││Coffee  ││Onboard ││  Map   │
-└──────┘└──────┘└───┬────┘└────────┘└────────┘└────────┘
-                    │
-                    ▲
-            ┌───────┴────────┐
-            │  TapCard ESP32 │   (RFID → HTTPS → Shuttle Backend)
-            │  IoT Devices   │
-            └────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           AUTHENTICATION LAYER                                      │
+│     User → Google OAuth → AWS Cognito → JWT Token → All Services                    │
+└────────────────────────────────────┬────────────────────────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    │        AUTH PORTAL (SSO)         │
+                    │       intraworx.cloud            │
+                    │                                  │
+                    │  Hosts Internal Modules:         │
+                    │  ┌────────────┐ ┌────────────┐  │
+                    │  │Client      │ │ FunWorX    │  │
+                    │  │Success     │ │ Events     │  │
+                    │  └─────┬──────┘ └─────┬──────┘  │
+                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
+                    │  │Wellness    │ │Philanthropy│  │
+                    │  │Associates  │ │            │  │
+                    │  └─────┬──────┘ └─────┬──────┘  │
+                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
+                    │  │Facilities  │ │   Admin    │  │
+                    │  │Management  │ │  Console   │  │
+                    │  └────────────┘ └────────────┘  │
+                    └───────┬──────────────┬──────────┘
+                            │              │
+                   JWT pass-through    Fastify API
+                            │              │
+         ┌──────────────────┴──┐    ┌──────┴──────────┐
+         │  External Services  │    │ IntraWorX       │
+         │  (via token in URL) │    │ Backend         │
+         └──────────┬──────────┘    │ (Prisma + DB)   │
+                    │               └──────┬──────────┘
+                    │                      │
+                    ▼                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                      EMPLOYEES SERVICE (Foundation Hub)                              │
+│                      employees.intraworx.cloud                                      │
+│                                                                                     │
+│  Single source of truth: employee records, org structure, departments, countries     │
+│  Consumed by ALL services below via REST API + Cognito JWT                           │
+└──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬───────────────┘
+       │      │      │      │      │      │      │      │      │      │
+       ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼
+  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││DailyFl.││ZimStat │
+  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││Reports ││Demogr. │
+  │        ││        ││        ││        ││  PWA   ││        ││        │
+  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└────────┘└────────┘
+      │         │
+      │         ▲  RFID tap data (SHA256 + HTTPS)
+      │    ┌────┴─────────┐
+      │    │ TapCard ESP32 │  IoT RFID readers in shuttles
+      │    │  Hardware     │
+      │    └──────────────┘
+      │
+      ▼ (circuit breaker pattern)
+  ┌───────────────────┐
+  │ Employees Service │  (validates patient = employee)
+  └───────────────────┘
 
-  Separate Ecosystems (own auth/DB):
-  ┌──────────┐  ┌──────────┐  ┌──────────┐
-  │ BusyBee  │  │ CorePTO  │  │ BeeCompl.│
-  │(Supabase)│  │ (Neon)   │  │ (Sheets) │
-  └──────────┘  └──────────┘  └──────────┘
+  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+  │BusyBee ││CorePTO ││BeeCom- ││Buzz AI ││Cheetah ││Payroll │
+  │  ERP   ││Leave   ││pliant  ││  IT AI ││  Hub   ││ Guard  │
+  │        ││Mgmt    ││Compli. ││Support ││  Docs  ││Backup  │
+  └───┬────┘└───┬────┘└───┬────┘└────────┘└────────┘└────────┘
+      │         │         │
+      │         │         │  ◄── All consume Employees Service
+      ▼         ▼         ▼
+  ┌────────┐ ┌────────┐ ┌────────┐
+  │Supabase│ │  Neon  │ │Google  │  (own external data stores,
+  │  DB    │ │Postgres│ │Sheets  │   but still call Employees API)
+  └────────┘ └────────┘ └────────┘
 ```
 
 ### Data Flow Summary
@@ -840,7 +866,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 |--------|--------|----------|---------|
 | Auth Portal | All Services | JWT (URL param) | SSO token passing |
 | All Services | Cognito JWKS | HTTPS | JWT validation |
-| WCC, WPW, Shuttle, Grind, TeamEase | Employees Service | REST API | Employee data lookup |
+| Wellness Center, Shuttle, Grind, TeamEase, BusyBee, CorePTO, BeeCompliant | Employees Service | REST API | Employee data lookup |
 | TapCard ESP32 | Shuttle Backend | HTTPS (SHA256 hash) | RFID boarding data |
 | Lambda Processor | SES | AWS SDK | Email notifications |
 | Services | RDS | PostgreSQL (TLS) | Data persistence |
@@ -848,7 +874,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 | Services | S3 | AWS SDK (HTTPS) | File storage |
 | DailyFlash, BeeCompliant | Google Sheets | HTTPS API | External data source |
 | CheetahHub | Google Drive | HTTPS API | Document access |
-| BusyBee, ZimStat | HubSpot | HTTPS API | CRM data sync |
+| BusyBee, ZimStat, DailyFlash, Employees | HubSpot | HTTPS API | CRM data sync |
 | Buzz AI | OpenAI / Claude | HTTPS API | AI inference |
 
 ---
