@@ -305,7 +305,7 @@ The Auth Portal is the **central nervous system** — both the SSO gateway and t
 |-----------|-------|------|--------|
 | **Employees Service** | Django 3.2+, DRF, PostgreSQL, Redis, Celery | 8001 | `employees.intraworx.cloud` |
 
-The **foundational service** consumed by virtually every other microservice. Manages employee lifecycle, organizational structure, departments, skills, documents, and multi-country operations (US, Costa Rica, Rwanda, Zambia, Zimbabwe). Integrates with Cognito JWT auth with auto-provisioning.
+The **foundational service** consumed by virtually every other microservice. Manages employee lifecycle, organizational structure, departments, skills, documents, and multi-country operations (US, Costa Rica, Zambia, Zimbabwe). Integrates with Cognito JWT auth with auto-provisioning.
 
 ### 6.3 Wellness Center
 

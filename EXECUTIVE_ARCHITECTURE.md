@@ -8,7 +8,7 @@
 
 ## What Is IntraWorX?
 
-IntraWorX is a **cloud-native internal operations platform** that consolidates employee-facing services into a single, secure ecosystem. It provides one login, one domain (`intraworx.cloud`), and one consistent experience for everything from HR onboarding to coffee shop orders, health clinic visits, shuttle transport, facilities management, and analytics dashboards.
+IntraWorX is a **cloud-native back-office operations platform** that consolidates internal services into a single, secure ecosystem — with the intent to extend its capabilities to the rest of the client-facing team members. It provides one login, one domain (`intraworx.cloud`), and one consistent experience for everything from HR onboarding to coffee shop orders, health clinic visits, shuttle transport, facilities management, and analytics dashboards.
 
 Every employee logs in once through Google and immediately has access to the services relevant to their role — no separate passwords, no separate systems.
 
@@ -23,7 +23,7 @@ Every employee logs in once through Google and immediately has access to the ser
 | **Authentication** | Google Single Sign-On via AWS Cognito |
 | **Total Services** | 16 microservices + IoT hardware |
 | **Infrastructure** | 100% containerized, Terraform-managed |
-| **Operating Countries** | Zimbabwe, Zambia, Costa Rica, Rwanda, US |
+| **Operating Countries** | Zimbabwe, Zambia, Costa Rica, US |
 
 ---
 
@@ -109,7 +109,7 @@ Every employee logs in once through Google and immediately has access to the ser
 | **Auth Portal** | Central login, service dashboard, and host for internal modules (Client Success, FunWorX events, Wellness Associates, Philanthropy, Facilities) |
 | **Employees Service** | Foundation HR system — employee records, org structure, departments, skills, documents. Used by nearly every other service |
 
-### Employee-Facing Services
+### Back-Office & Operational Services
 
 | Service | What It Does | Domain |
 |---------|-------------|--------|
