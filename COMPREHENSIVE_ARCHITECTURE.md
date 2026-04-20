@@ -787,72 +787,125 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 ## 15. Inter-Service Communication Map
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                           AUTHENTICATION LAYER                                      │
-│     User → Google OAuth → AWS Cognito → JWT Token → Services [via RBAC]             │
-└────────────────────────────────────┬────────────────────────────────────────────────┘
-                                     │
-                    ┌────────────────┴────────────────┐
-                    │        AUTH PORTAL (SSO)        │
-                    │       intraworx.cloud           │
-                    │                                 │
-                    │  Hosts Internal Modules:        │
-                    │  ┌────────────┐ ┌────────────┐  │
-                    │  │Client      │ │ FunWorX    │  │
-                    │  │Success     │ │ Events     │  │
-                    │  └─────┬──────┘ └─────┬──────┘  │
-                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
-                    │  │Wellness    │ │Philanthropy│  │
-                    │  │Associates  │ │            │  │
-                    │  └─────┬──────┘ └─────┬──────┘  │
-                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
-                    │  │Facilities  │ │   Admin    │  │
-                    │  │Management  │ │  Console   │  │
-                    │  └────────────┘ └────────────┘  │
-                    └───────┬──────────────┬──────────┘
-                            │              │
-                   JWT pass-through    Fastify API
-                            │              │
-         ┌──────────────────┴──┐    ┌──────┴──────────┐
-         │  External Services  │    │ IntraWorX       │
-         │  (via token in URL) │    │ Backend         │
-         └──────────┬──────────┘    │ (Prisma + DB)   │
-                    │               └──────┬──────────┘
-                    │                      │
-                    ▼                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                      EMPLOYEES SERVICE (Foundation Hub)                             │
-│                      employees.intraworx.cloud                                      │
-│                                                                                     │
-│  Single source of truth: employee records, org structure, departments, countries    │
-│  Consumed by ALL services below via REST API + Cognito JWT                          │
-└──────┬────-──┬────────────┬─────-─┬────────────┬──────┬──────-──────-───────────────┘
-       │       │            │       │            │      │              
-       ▼       ▼            ▼       ▼            ▼      ▼              
-  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││BusyBee │
-  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││  ERP   │
-  │        ││        ││        ││        ││  PWA   ││        │
-  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└───┬────┘
-      │         │                                       │
-      │         ▲  RFID tap data (SHA256 + HTTPS)       ▼
-      │    ┌────┴─────────┐                        ┌────────┐
-      │    │ TapCard ESP32│   IoT RFID readers     │Supabase│
-      │    │  Hardware    │   in shuttles          │  DB    │
-      │    └──────────────┘                        └────────┘
-      │
-      ▼ (circuit breaker pattern)
-  ┌───────────────────┐
-  │ Employees Service │  (validates patient = employee)
-  └───────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                              AUTHENTICATION LAYER                                        │
+│        User → Google OAuth → AWS Cognito → JWT Token → Services [via RBAC]               │
+│        * BusyBee uses Supabase Auth (SSO migration planned)                              │
+└───────────────────────────────────────┬──────────────────────────────────────────────────┘
+                                        │
+                   ┌────────────────────┴─────────────────────┐
+                   │           AUTH PORTAL (SSO)               │
+                   │          intraworx.cloud                  │
+                   │                                           │
+                   │   Hosts Internal Modules:                 │
+                   │   (All modules consume Employees Service  │
+                   │    via IntraWorX Backend)                  │
+                   │                                           │
+                   │   ┌──────────────┐  ┌──────────────┐      │
+                   │   │ Client       │  │ FunWorX      │      │
+                   │   │ Success      │  │ Events       │      │
+                   │   │              │  │              │      │
+                   │   │ Integrations:│  │ Integrations:│      │
+                   │   │ • SES Email  │  │ • RFID       │      │
+                   │   │ • S3 Storage │  │ • QR Codes   │      │
+                   │   └──────────────┘  └──────────────┘      │
+                   │   ┌──────────────┐  ┌──────────────┐      │
+                   │   │ Wellness     │  │ Philanthropy │      │
+                   │   │ Associates   │  │              │      │
+                   │   │              │  │ Integrations:│      │
+                   │   │ Integrations:│  │ • Leaflet    │      │
+                   │   │ • SES Email  │  │   Maps       │      │
+                   │   │ • S3 Storage │  │ • S3 Storage │      │
+                   │   └──────────────┘  └──────────────┘      │
+                   │   ┌──────────────┐  ┌──────────────┐      │
+                   │   │ Facilities   │  │ Admin        │      │
+                   │   │ Management   │  │ Console      │      │
+                   │   │              │  │              │      │
+                   │   │ Integrations:│  │ Integrations:│      │
+                   │   │ • Vendor Mgmt│  │ • ECS API    │      │
+                   │   │ • S3 Storage │  │ • Cognito API│      │
+                   │   └──────────────┘  └──────────────┘      │
+                   └──────────┬────────────────┬───────────────┘
+                              │                │
+                     JWT pass-through     Fastify API
+                              │                │
+                              │          ┌─────┴──────────────┐
+                              │          │ IntraWorX Backend  │
+                              │          │ (Prisma + DB)      │
+                              │          │                    │
+                              │          │ Integrations:      │
+                              │          │ • Employees Svc    │
+                              │          │ • AWS SES/SNS      │
+                              │          │ • S3 Storage       │
+                              │          └─────┬──────────────┘
+                              │                │
+                              ▼                ▼
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                        EMPLOYEES SERVICE (Foundation Hub)                                 │
+│                        employees.intraworx.cloud                                         │
+│                                                                                          │
+│   Single source of truth for TEAM MEMBER data:                                           │
+│   employee records, org structure, departments, skills, documents, countries              │
+│                                                                                          │
+│   Integrations: HubSpot CRM, Freshservice, Cognito JWT                                   │
+│                                                                                          │
+│   Consumed by: Auth Portal (all internal modules), Wellness Center, Shuttle,             │
+│   The Grind, Seating Map, TeamEase, BusyBee                                              │
+└───┬──────────┬──────────┬──────────┬──────────┬──────────┬───────────────────────────────┘
+    │          │          │          │          │          │
+    ▼          ▼          ▼          ▼          ▼          ▼
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ Wellness       │ │ Shuttle        │ │ The Grind      │ │ Seating Map    │
+│ Center         │ │ Management     │ │ (Coffee Shop)  │ │ (Project Atlas)│
+│                │ │                │ │                │ │                │
+│ Integrations:  │ │ Integrations:  │ │ Integrations:  │ │ Integrations:  │
+│ • Employees Svc│ │ • Employees Svc│ │ • Employees Svc│ │ • Employees Svc│
+│ • SES Email    │ │ • TapCard RFID │ │ • Cognito JWT  │ │ • Cognito JWT  │
+│ • Cognito JWT  │ │ • SES Email    │ │ • Prometheus   │ │                │
+│ • Prometheus   │ │ • Cognito JWT  │ └────────────────┘ └────────────────┘
+│ • Celery/Redis │ │ • WebSocket    │
+└────────────────┘ └───────┬────────┘ ┌────────────────┐ ┌────────────────┐
+                           │          │ TeamEase       │ │ BusyBee ERP    │
+                           ▲          │ (Onboarding)   │ │                │
+                   RFID tap data      │                │ │ Auth: Supabase │
+                  (SHA256 + HTTPS)    │ Integrations:  │ │ (not SSO yet)  │
+                           │          │ • Employees Svc│ │                │
+                  ┌────────┴────────┐ │ • Cognito JWT  │ │ Integrations:  │
+                  │ TapCard ESP32   │ │ • Sentry       │ │ • Employees Svc│
+                  │ (IoT Hardware)  │ │ • Offline PWA  │ │ • HubSpot CRM  │
+                  │                 │ └────────────────┘ │ • Supabase DB  │
+                  │ Integrations:   │                    │ • SES Email    │
+                  │ • WiFi/HTTPS    │                    └────────────────┘
+                  │ • SHA256 hashing│
+                  └─────────────────┘
 
-  Other IntraWorX Services (SSO-integrated, own data sources):
-  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ 
-  │DailyFl.│ │ZimStat │ │Buzz AI │ │Cheetah │ │Payroll │ 
-  │Reports │ │Demogr. │ │  IT AI │ │  Hub   │ │ Guard  │
-  │HubSpot │ │HubSpot │ │Support │ │  Docs  │ │Backup  │
-  │+Sheets │ │  CRM   │ │        │ │        │ │        │
-  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘
+  ┌───────────────────────────────────────────────────────────────────────────────────┐
+  │  OTHER INTRAWORX SERVICES (SSO-integrated, own data sources — not consuming      │
+  │  Employees Service directly)                                                      │
+  └───────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ DailyFlash     │ │ ZimStat        │ │ Buzz AI        │ │ CheetahHub     │
+│ (Reports)      │ │ (Demographics) │ │ (IT Support)   │ │ (Documents)    │
+│                │ │                │ │                │ │                │
+│ Integrations:  │ │ Integrations:  │ │ Integrations:  │ │ Integrations:  │
+│ • HubSpot CRM  │ │ • HubSpot CRM  │ │ • Freshservice │ │ • Google Drive │
+│ • Google Sheets│ │ • MapLibre GL  │ │ • OpenAI       │ │ • Google Svc   │
+│ • Celery/Redis │ │ • Cognito JWT  │ │ • Claude AI    │ │   Account      │
+│ • SES Email    │ │                │ │ • ChromaDB     │ │ • Cognito JWT  │
+│ • Calendly     │ └────────────────┘ │ • Cognito JWT  │ └────────────────┘
+└────────────────┘                    └────────────────┘
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ PayrollGuard   │ │ CorePTO        │ │ BeeCompliant   │
+│ (Backup)       │ │ (Leave Mgmt)   │ │ (Compliance)   │
+│                │ │                │ │                │
+│ Integrations:  │ │ Integrations:  │ │ Integrations:  │
+│ • AWS S3 (KMS) │ │ • Google Sheets│ │ • Google Sheets│
+│ • CloudFront   │ │ • Neon Postgres│ │ • Google Gemini│
+│ • Cognito SSO  │ │ • Cognito JWT  │ │ • Cognito JWT  │
+│ • PowerShell   │ └────────────────┘ └────────────────┘
+│   Sync Client  │
+└────────────────┘
 ```
 
 ### Data Flow Summary
@@ -860,8 +913,9 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 | Source | Target | Protocol | Purpose |
 |--------|--------|----------|---------|
 | Auth Portal | All Services | JWT (URL param) | SSO token passing |
-| All Services | Cognito JWKS | HTTPS | JWT validation |
-| Wellness Center, Shuttle, Grind, Seating Map, TeamEase, BusyBee | Employees Service | REST API | Employee data lookup |
+| Auth Portal (all internal modules) | Employees Service | REST API (via IntraWorX Backend) | Team member data for CS, FunWorX, Wellness, Philanthropy, Facilities |
+| Wellness Center, Shuttle, Grind, Seating Map, TeamEase | Employees Service | REST API + Cognito JWT | Team member data lookup |
+| BusyBee | Employees Service | REST API (Supabase Auth) | Team member data lookup (not SSO — uses Supabase Auth) |
 | TapCard ESP32 | Shuttle Backend | HTTPS (SHA256 hash) | RFID boarding data |
 | Lambda Processor | SES | AWS SDK | Email notifications |
 | Services | RDS | PostgreSQL (TLS) | Data persistence |
