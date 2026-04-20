@@ -789,7 +789,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 │                           AUTHENTICATION LAYER                                      │
-│     User → Google OAuth → AWS Cognito → JWT Token → All Services                    │
+│     User → Google OAuth → AWS Cognito → JWT Token → Services [via RBAC]             │
 └────────────────────────────────────┬────────────────────────────────────────────────┘
                                      │
                     ┌────────────────┴────────────────┐
