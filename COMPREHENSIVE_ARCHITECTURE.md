@@ -164,7 +164,7 @@ Access control is driven entirely by **Cognito User Groups**. Each group maps to
 
 | Module | Roles |
 |--------|-------|
-| Client Success (CS) | `CS_Full` → ADMIN, `CS_Manager` → TEAM_MEMBER, `CS_User` → VIEWER |
+| Client Success Task and Documents Manager (CS) | `CS_Full` → ADMIN, `CS_Manager` → TEAM_MEMBER, `CS_User` → VIEWER |
 | FunWorX | `FUNWORX_Full` → ADMIN, `FUNWORX_Manager` → ORGANIZER, `FUNWORX_User` → ATTENDEE |
 | Wellness Associates | `WELLNESS_ASSOC_Coordinator`, `WELLNESS_ASSOC_Counselor`, `WELLNESS_ASSOC_Associate`, `WELLNESS_ASSOC_Viewer` |
 | Philanthropy | `PHILANTHROPY_Manager`, `PHILANTHROPY_Lead`, `PHILANTHROPY_User`, `PHILANTHROPY_External`, `PHILANTHROPY_Viewer` |
@@ -293,7 +293,7 @@ The Auth Portal is the **central nervous system** — both the SSO gateway and t
 | Module | Route Prefix | Purpose |
 |--------|-------------|---------|
 | Admin Console | `/admin` | User management, modules, services, feature flags, ECS monitoring, audit logs |
-| Client Success | `/cs` | Document management, task tracking, digital signatures |
+| Client Success Task and Documents Manager | `/cs` | Document management, task tracking, digital signatures |
 | FunWorX | `/funworx` | Company events, invitations, QR check-ins, RFID attendance |
 | Wellness Associates | `/wellness-associates` | Wellness activities, counseling sessions, emergency tracking |
 | Philanthropy | `/philanthropy` | CSR projects, proposals, budgets, beneficiaries, impact mapping |
@@ -799,11 +799,11 @@ The platform has a **designed but currently disabled** DR configuration (for cos
                    │                                           │
                    │   Hosts Internal Modules:                 │
                    │   (All modules consume Employees Service  │
-                   │    via IntraWorX Backend)                  │
+                   │    via IntraWorX Backend)                 │
                    │                                           │
                    │   ┌──────────────┐  ┌──────────────┐      │
-                   │   │ Client       │  │ FunWorX      │      │
-                   │   │ Success      │  │ Events       │      │
+                   │   │ Client Succ. │  │ FunWorX      │      │
+                   │   │ Task & Docs  │  │              │      │
                    │   │              │  │              │      │
                    │   │ Integrations:│  │ Integrations:│      │
                    │   │ • SES Email  │  │ • RFID       │      │

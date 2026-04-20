@@ -42,11 +42,11 @@ Every employee logs in once through Google and immediately has access to the ser
                    │                                           │
                    │   Hosts Internal Modules:                 │
                    │   (All modules consume Employees Service  │
-                   │    via IntraWorX Backend)                  │
+                   │    via IntraWorX Backend)                 │
                    │                                           │
                    │   ┌──────────────┐  ┌──────────────┐      │
-                   │   │ Client       │  │ FunWorX      │      │
-                   │   │ Success      │  │ Events       │      │
+                   │   │ Client Succ. │  │ FunWorX      │      │
+                   │   │ Task & Docs  │  │              │      │
                    │   │              │  │              │      │
                    │   │ Integrations:│  │ Integrations:│      │
                    │   │ • SES Email  │  │ • RFID       │      │
@@ -84,11 +84,11 @@ Every employee logs in once through Google and immediately has access to the ser
                               │                │
                               ▼                ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                      EMPLOYEES SERVICE (Foundation Hub)                              │
+│                      EMPLOYEES SERVICE (Foundation Hub)                             │
 │                      employees.intraworx.cloud                                      │
 │                                                                                     │
 │  Single source of truth for TEAM MEMBER data:                                       │
-│  employee records, org structure, departments, skills, documents, countries          │
+│  employee records, org structure, departments, skills, documents, countries         │
 │                                                                                     │
 │  Integrations: HubSpot CRM, Freshservice, Cognito JWT                               │
 │                                                                                     │
@@ -160,7 +160,7 @@ Every employee logs in once through Google and immediately has access to the ser
 
 | Service | What It Does |
 |---------|-------------|
-| **Auth Portal** | Central login, service dashboard, and host for internal modules (Client Success, FunWorX events, Wellness Associates, Philanthropy, Facilities) |
+| **Auth Portal** | Central login, service dashboard, and host for internal modules (Client Success Task and Documents Manager, FunWorX events, Wellness Associates, Philanthropy, Facilities) |
 | **Employees Service** | Foundation HR system — employee records, org structure, departments, skills, documents. Used by nearly every other service |
 
 ### Back-Office & Operational Services
@@ -176,7 +176,7 @@ Every employee logs in once through Google and immediately has access to the ser
 
 | Module | What It Does |
 |--------|-------------|
-| **Client Success** | Document management, task tracking, digital signatures |
+| **Client Success Task and Documents Manager** | Document management, task tracking, digital signatures |
 | **FunWorX** | Company events, invitations, QR check-ins, attendance |
 | **Wellness Associates** | Wellness activities, counseling sessions, emergency tracking |
 | **Philanthropy** | CSR projects, proposals, budgets, beneficiary tracking, impact maps |
