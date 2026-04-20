@@ -30,66 +30,72 @@ Every employee logs in once through Google and immediately has access to the ser
 ## How It Works — The Big Picture
 
 ```
-                           ┌─────────────────────────┐
-                           │       EMPLOYEES           │
-                           │   (Browser / Mobile)      │
-                           └────────────┬────────────┘
-                                        │
-                                Google Sign-In
-                                        │
-                           ┌────────────▼────────────┐
-                           │    IntraWorX Portal        │
-                           │   intraworx.cloud          │
-                           │                            │
-                           │  ● Service Dashboard        │
-                           │  ● Role-Based Access        │
-                           │                            │
-                           │  ┌───── INTERNAL MODULES ─┐  │
-                           │  │ Client Success       │  │
-                           │  │ FunWorX (Events)     │  │
-                           │  │ Wellness Associates  │  │
-                           │  │ Philanthropy         │  │
-                           │  │ Facilities Mgmt      │  │
-                           │  │ Admin Console        │  │
-                           │  └──────────────────────┘  │
-                           └───────┬─────────────┬─────┘
-                                   │             │
-                     JWT to services │       Fastify API
-                                   │             │
-        ┌──────────┬──────────┼──────────┐  │
-        ▼          ▼          ▼          ▼  ▼
-  ┌──────────┐┌─────────┐┌────────┐┌───────────────────┐
-  │ Wellness ││ Shuttle ││  Café  ││ IntraWorX Backend │
-  │  Center  ││Transport││The Grind││ (Prisma + DB)     │
-  └────┬─────┘└───┬─────┘└────┬───┘└─────────┬─────────┘
-       │         │         │             │
-       ▼         ▼         ▼             ▼
-  ┌─────────┐┌─────────┐┌─────────┐┌───────────────┐
-  │TeamEase ││ Seating ││ DailyFl.││  More Services  │
-  │Onboard  ││   Map   ││ Reports ││  (see catalog)  │
-  └────┬────┘└────┬────┘└────┬────┘└───────┬───────┘
-       │         │         │             │
-       └─────────┴─────────┴─────────────┘
-                         │
-                         ▼
-            ┌──────────────────────────────┐
-            │    EMPLOYEES SERVICE (Hub)    │  ◄── All services call this
-            │  Employee records, org chart,  │      for employee data
-            │  departments, multi-country    │
-            └───────────────┬──────────────┘
-                              │
-               ┌─────────────┴─────────────┐
-               ▼                             ▼
-  ┌───────────────────────┐   ┌──────────────┐
-  │  Shared RDS PostgreSQL  │   │ Redis Cache  │
-  │ (isolated DBs per svc)  │   │ (sessions)   │
-  └───────────────────────┘   └──────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           AUTHENTICATION LAYER                                      │
+│     User → Google OAuth → AWS Cognito → JWT Token → Services [via RBAC]             │
+└────────────────────────────────────┬────────────────────────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    │        AUTH PORTAL (SSO)        │
+                    │       intraworx.cloud           │
+                    │                                 │
+                    │  Hosts Internal Modules:        │
+                    │  ┌────────────┐ ┌────────────┐  │
+                    │  │Client      │ │ FunWorX    │  │
+                    │  │Success     │ │ Events     │  │
+                    │  └─────┬──────┘ └─────┬──────┘  │
+                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
+                    │  │Wellness    │ │Philanthropy│  │
+                    │  │Associates  │ │            │  │
+                    │  └─────┬──────┘ └─────┬──────┘  │
+                    │  ┌─────┴──────┐ ┌─────┴──────┐  │
+                    │  │Facilities  │ │   Admin    │  │
+                    │  │Management  │ │  Console   │  │
+                    │  └────────────┘ └────────────┘  │
+                    └───────┬──────────────┬──────────┘
+                            │              │
+                   JWT pass-through    Fastify API
+                            │              │
+         ┌──────────────────┴──┐    ┌──────┴──────────┐
+         │  External Services  │    │ IntraWorX       │
+         │  (via token in URL) │    │ Backend         │
+         └──────────┬──────────┘    │ (Prisma + DB)   │
+                    │               └──────┬──────────┘
+                    │                      │
+                    ▼                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                      EMPLOYEES SERVICE (Foundation Hub)                             │
+│                      employees.intraworx.cloud                                      │
+│                                                                                     │
+│  Single source of truth: employee records, org structure, departments, countries    │
+│  Consumed by ALL services below via REST API + Cognito JWT                          │
+└──────┬────-──┬────────────┬─────-─┬────────────┬──────┬──────-──────-───────────────┘
+       │       │            │       │            │      │              
+       ▼       ▼            ▼       ▼            ▼      ▼              
+  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││BusyBee │
+  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││  ERP   │
+  │        ││        ││        ││        ││  PWA   ││        │
+  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└───┬────┘
+      │         │                                       │
+      │         ▲  RFID tap data (SHA256 + HTTPS)       ▼
+      │    ┌────┴─────────┐                        ┌────────┐
+      │    │ TapCard ESP32│   IoT RFID readers     │Supabase│
+      │    │  Hardware    │   in shuttles          │  DB    │
+      │    └──────────────┘                        └────────┘
+      │
+      ▼ (circuit breaker pattern)
+  ┌───────────────────┐
+  │ Employees Service │  (validates patient = employee)
+  └───────────────────┘
 
-  IoT Layer:
-  ┌─────────────────┐
-  │ TapCard ESP32   │  RFID readers in shuttles
-  │ (IoT Hardware)  │  tap → encrypted → Shuttle API
-  └─────────────────┘
+  Other IntraWorX Services (SSO-integrated, own data sources):
+  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ 
+  │DailyFl.│ │ZimStat │ │Buzz AI │ │Cheetah │ │Payroll │ 
+  │Reports │ │Demogr. │ │  IT AI │ │  Hub   │ │ Guard  │
+  │HubSpot │ │HubSpot │ │Support │ │  Docs  │ │Backup  │
+  │+Sheets │ │  CRM   │ │        │ │        │ │        │
+  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘
 ```
 
 ---
