@@ -829,29 +829,30 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 └──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬───────────────┘
        │      │      │      │      │      │      │      │      │      │
        ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼
-  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││DailyFl.││ZimStat ││BusyBee │
-  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││Reports ││Demogr. ││  ERP   │
-  │        ││        ││        ││        ││  PWA   ││        ││        ││        │
-  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└────────┘└────────┘└───┬────┘
-      │         │                                                          │
-      │         ▲  RFID tap data (SHA256 + HTTPS)                          ▼
-      │    ┌────┴─────────┐                                          ┌────────┐
-      │    │ TapCard ESP32 │  IoT RFID readers in shuttles           │Supabase│
-      │    │  Hardware     │                                         │  DB    │
-      │    └──────────────┘                                          └────────┘
+  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││BusyBee │
+  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││  ERP   │
+  │        ││        ││        ││        ││  PWA   ││        │
+  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└───┬────┘
+      │         │                                       │
+      │         ▲  RFID tap data (SHA256 + HTTPS)       ▼
+      │    ┌────┴─────────┐                        ┌────────┐
+      │    │ TapCard ESP32 │  IoT RFID readers     │Supabase│
+      │    │  Hardware     │  in shuttles           │  DB    │
+      │    └──────────────┘                        └────────┘
       │
       ▼ (circuit breaker pattern)
   ┌───────────────────┐
   │ Employees Service │  (validates patient = employee)
   └───────────────────┘
 
-  Other Services (standalone, not consuming Employees API):
-  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
-  │Buzz AI ││Cheetah ││Payroll ││CorePTO ││BeeCom- ││        │
-  │  IT AI ││  Hub   ││ Guard  ││ Leave  ││pliant  ││        │
-  │Support ││  Docs  ││Backup  ││ Mgmt   ││Compli. ││        │
-  └────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
+  Other IntraWorX Services (SSO-integrated, own data sources):
+  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+  │DailyFl.│ │ZimStat │ │Buzz AI │ │Cheetah │ │Payroll │ │CorePTO │ │BeeCom- │
+  │Reports │ │Demogr. │ │  IT AI │ │  Hub   │ │ Guard  │ │ Leave  │ │pliant  │
+  │HubSpot │ │HubSpot │ │Support │ │  Docs  │ │Backup  │ │ Mgmt   │ │Compli. │
+  │+Sheets │ │  CRM   │ │        │ │        │ │        │ │        │ │        │
+  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘ └────────┘ └────────┘
 ```
 
 ### Data Flow Summary
@@ -860,12 +861,14 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 |--------|--------|----------|---------|
 | Auth Portal | All Services | JWT (URL param) | SSO token passing |
 | All Services | Cognito JWKS | HTTPS | JWT validation |
-| Wellness Center, Shuttle, Grind, Seating Map, TeamEase, DailyFlash, ZimStat, BusyBee | Employees Service | REST API | Employee data lookup |
+| Wellness Center, Shuttle, Grind, Seating Map, TeamEase, BusyBee | Employees Service | REST API | Employee data lookup |
 | TapCard ESP32 | Shuttle Backend | HTTPS (SHA256 hash) | RFID boarding data |
 | Lambda Processor | SES | AWS SDK | Email notifications |
 | Services | RDS | PostgreSQL (TLS) | Data persistence |
 | Services | Redis | Redis (TLS) | Caching / task queues |
 | Services | S3 | AWS SDK (HTTPS) | File storage |
+| DailyFlash | Google Sheets, HubSpot | HTTPS API | Report data aggregation |
+| ZimStat | HubSpot CRM | HTTPS API | Client demographics data |
 | DailyFlash, BeeCompliant | Google Sheets | HTTPS API | External data source |
 | CheetahHub | Google Drive | HTTPS API | Document access |
 | BusyBee, ZimStat, DailyFlash, Employees | HubSpot | HTTPS API | CRM data sync |
