@@ -829,35 +829,29 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 └──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬───────────────┘
        │      │      │      │      │      │      │      │      │      │
        ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼
-  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││DailyFl.││ZimStat │
-  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││Reports ││Demogr. │
-  │        ││        ││        ││        ││  PWA   ││        ││        │
-  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└────────┘└────────┘
-      │         │
-      │         ▲  RFID tap data (SHA256 + HTTPS)
-      │    ┌────┴─────────┐
-      │    │ TapCard ESP32 │  IoT RFID readers in shuttles
-      │    │  Hardware     │
-      │    └──────────────┘
+  ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+  │Wellness││Shuttle ││ Grind  ││Seating ││TeamEase││DailyFl.││ZimStat ││BusyBee │
+  │Center  ││Mgmt    ││Coffee  ││  Map   ││Onboard ││Reports ││Demogr. ││  ERP   │
+  │        ││        ││        ││        ││  PWA   ││        ││        ││        │
+  └───┬────┘└───┬────┘└────────┘└────────┘└────────┘└────────┘└────────┘└───┬────┘
+      │         │                                                          │
+      │         ▲  RFID tap data (SHA256 + HTTPS)                          ▼
+      │    ┌────┴─────────┐                                          ┌────────┐
+      │    │ TapCard ESP32 │  IoT RFID readers in shuttles           │Supabase│
+      │    │  Hardware     │                                         │  DB    │
+      │    └──────────────┘                                          └────────┘
       │
       ▼ (circuit breaker pattern)
   ┌───────────────────┐
   │ Employees Service │  (validates patient = employee)
   └───────────────────┘
 
+  Other Services (standalone, not consuming Employees API):
   ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
-  │BusyBee ││CorePTO ││BeeCom- ││Buzz AI ││Cheetah ││Payroll │
-  │  ERP   ││Leave   ││pliant  ││  IT AI ││  Hub   ││ Guard  │
-  │        ││Mgmt    ││Compli. ││Support ││  Docs  ││Backup  │
-  └───┬────┘└───┬────┘└───┬────┘└────────┘└────────┘└────────┘
-      │         │         │
-      │         │         │  ◄── All consume Employees Service
-      ▼         ▼         ▼
-  ┌────────┐ ┌────────┐ ┌────────┐
-  │Supabase│ │  Neon  │ │Google  │  (own external data stores,
-  │  DB    │ │Postgres│ │Sheets  │   but still call Employees API)
-  └────────┘ └────────┘ └────────┘
+  │Buzz AI ││Cheetah ││Payroll ││CorePTO ││BeeCom- ││        │
+  │  IT AI ││  Hub   ││ Guard  ││ Leave  ││pliant  ││        │
+  │Support ││  Docs  ││Backup  ││ Mgmt   ││Compli. ││        │
+  └────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
 ```
 
 ### Data Flow Summary
@@ -866,7 +860,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 |--------|--------|----------|---------|
 | Auth Portal | All Services | JWT (URL param) | SSO token passing |
 | All Services | Cognito JWKS | HTTPS | JWT validation |
-| Wellness Center, Shuttle, Grind, TeamEase, BusyBee, CorePTO, BeeCompliant | Employees Service | REST API | Employee data lookup |
+| Wellness Center, Shuttle, Grind, Seating Map, TeamEase, DailyFlash, ZimStat, BusyBee | Employees Service | REST API | Employee data lookup |
 | TapCard ESP32 | Shuttle Backend | HTTPS (SHA256 hash) | RFID boarding data |
 | Lambda Processor | SES | AWS SDK | Email notifications |
 | Services | RDS | PostgreSQL (TLS) | Data persistence |
