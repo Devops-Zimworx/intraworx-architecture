@@ -337,7 +337,7 @@ Internal café management — menu, POS sales, inventory, stock movements, promo
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
 | **Seating Map Backend** | Django 5.1, DRF, PostgreSQL | 8000 | `api.seatingmap.intraworx.cloud` |
-| **Seating Map Frontend** | Nuxt 3, Vue 3, Tailwind CSS | 3000 | `seatingmap.intraworx.cloud` |
+| **Seating Map Frontend** | React, Tailwind CSS | 3000 | `seatingmap.intraworx.cloud` |
 
 Multi-site seating management — floor layouts, zones, clusters, seats, team assignments, work schedules across Zimbabwe, Zambia, Costa Rica.
 
