@@ -784,16 +784,16 @@ The platform has a **designed but currently disabled** DR configuration (for cos
    │         │         │         │         │              │
    ▼         ▼         ▼         ▼         ▼              ▼
 ┌────────┐┌────────┐┌────────┐┌────────┐┌──────────────┐┌──────────────────────┐
-│Wellness││Shuttle ││The     ││Seating ││ BusyBee ERP          │
+│Wellness││Shuttle ││The     ││Seating ││ BusyBee ERP  ||                      │
 │Center  ││Mgmt    ││Grind   ││Map     ││              ││ Auth: Supabase       │
-│        ││        ││        ││        ││ Submodules:  ││ (not SSO yet)        │
+│        ││        ││        ││        ││ Submodules:  ││                      │
 │Integr: ││Integr: ││Integr: ││Integr: ││ • Onboarding ││                      │
 │• Emp Sv││• Emp Sv││• Emp Sv││• Emp Sv││ • TM Data    ││ Submodules:          │
 │• SES   ││• RFID  ││• Cognit││• Cognit││   Management ││ • Client & TM Mgmt   │
 │• Cognit││• SES   ││• Promet││        ││ • Offboarding││ • SME Hub            │
 │• Promet││• Cognit││        ││        ││              ││ • Offboarding        │
 │• Celery││• WS    ││        ││        ││ Integr:      ││ • Reporting          │
-│        ││        ││        ││        ││ • HubSpot CRM        │
+│________││________││________││________││ • HubSpot CRM │______________________|
               │
      ┌────────┴────────┐
      │ TapCard ESP32   │

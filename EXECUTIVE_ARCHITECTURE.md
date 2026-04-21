@@ -100,7 +100,7 @@ Every employee logs in once through Google and immediately has access to the ser
 ┌────────┐┌────────┐┌────────┐┌────────┐┌──────────────┐┌──────────────────────┐
 │Wellness││Shuttle ││The     ││Seating ││ BusyBee ERP          │
 │Center  ││Mgmt    ││Grind   ││Map     ││ Auth: Supabase       │
-│        ││        ││        ││        ││ (not SSO yet)        │
+│        ││        ││        ││        ││         │
 │Integr: ││Integr: ││Integr: ││Integr: ││                      │
 │• Emp Sv││• Emp Sv││• Emp Sv││• Emp Sv││ Submodules:          │
 │• SES   ││• RFID  ││• Cognit││• Cognit││ • Client & TM Mgmt   │
