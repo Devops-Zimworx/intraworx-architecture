@@ -21,8 +21,7 @@
 11. [CI/CD & Deployment](#11-cicd--deployment)
 12. [External Integrations](#12-external-integrations)
 13. [Disaster Recovery & Business Continuity](#13-disaster-recovery--business-continuity)
-14. [Cost Management](#14-cost-management)
-15. [Inter-Service Communication Map](#15-inter-service-communication-map)
+14. [Inter-Service Communication Map](#14-inter-service-communication-map)
 
 ---
 
@@ -155,7 +154,6 @@ Access control is driven entirely by **Cognito User Groups**. Each group maps to
 | The Grind | `GRIND_Full` | `GRIND_Manager` | `GRIND_User` |
 | Wellness Center | `WCC_Full` | `WCC_Manager` | `WCC_User` |
 | Seating Map | `SEATING_MAP_Full` | `SEATING_MAP_Manager` | `SEATING_MAP_User` |
-| CheetahHub | `CHEETAH_Full` | `CHEETAH_Manager` | `CHEETAH_User` |
 | ZimStat | `ZIM_Full` | `ZIM_Manager` | `ZIM_User` |
 | PayrollGuard | `PAYROLL_Full` | `PAYROLL_Manager` | `PAYROLL_User` |
 | DailyFlash | `DF_Full` | `DF_Manager` | `DF_User` |
@@ -257,7 +255,7 @@ The platform runs on a single ECS cluster with **dual capacity providers** — O
 | Provider | ASG Min/Max/Desired | Purpose |
 |----------|---------------------|---------|
 | **On-Demand** | 2 / 4 / 3 | Critical services: Auth Portal, Employees, The Grind, Clinic |
-| **Spot** | 3 / 10 / 8 | Non-critical: Shuttle, CheetahHub, ZimStat, DailyFlash, etc. |
+| **Spot** | 3 / 10 / 8 | Non-critical: Shuttle, ZimStat, DailyFlash, etc. |
 
 ### 5.2 Launch Template
 
@@ -334,16 +332,7 @@ Employee shuttle transport management with ESP32 RFID boarding, real-time trip t
 
 Internal café management — menu, POS sales, inventory, stock movements, promotions/vouchers, analytics.
 
-### 6.6 CheetahHub
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **CheetahHub Backend** | FastAPI, Python | 8000 | `cheetahhub-api.intraworx.cloud` |
-| **CheetahHub Frontend** | React, Vite, Tailwind CSS | 3000 | `cheetahhub.intraworx.cloud` |
-
-Internal Google Drive file viewer — fetches/embeds documents from Google Drive folders without requiring user auth to Google. Uses service account for server-side access.
-
-### 6.7 Automated Seating Map (Project Atlas)
+### 6.6 Automated Seating Map (Project Atlas)
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -369,16 +358,7 @@ Aggregates data from Google Sheets and HubSpot CRM, generates daily flash report
 
 Client demographics dashboard with US heat map visualization. Pulls data from HubSpot CRM via server-side API.
 
-### 6.10 Buzz AI
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **Buzz AI Backend** | FastAPI, Python, ChromaDB/Pinecone | 8002 | `api.buzzai.intraworx.cloud` |
-| **Buzz AI Frontend** | Nuxt 3 | 3000 | `buzzai.intraworx.cloud` |
-
-AI-powered IT support agent — learns from Freshservice knowledge base, performs ticket classification and solution generation with continuous learning from feedback. Uses OpenAI and Claude LLMs.
-
-### 6.11 BusyBee Hive ERP
+### 6.9 BusyBee Hive ERP
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -386,31 +366,7 @@ AI-powered IT support agent — learns from Freshservice knowledge base, perform
 
 Comprehensive ERP for client relationships, team members, training, attendance, performance, PTO, offboarding, attrition analytics, sales reports. Uses **Supabase** as backend (external PostgreSQL, not on platform RDS). HubSpot CRM sync. Consumes `employees-service` for employee data.
 
-### 6.12 BeeCompliant
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **BeeCompliant** | React 19, TypeScript, Vite, Tailwind CSS | 3000 | `beecompliant.intraworx.cloud` |
-
-Mobile device compliance tracking — manages approved device lists, generates PDF compliance reports. Reads data from published Google Sheets. Uses Google Gemini AI for insights. Consumes `employees-service` for employee data.
-
-### 6.13 CorePTO
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **CorePTO** | Node.js | 3000 | `corepto.intraworx.cloud` |
-
-PTO request automation — digital form submission, real-time balance display, client approval workflows, auto-generated payroll documents, Google Sheets sync. Uses external **Neon PostgreSQL** database. Consumes `employees-service` for employee data.
-
-### 6.14 TeamEase
-
-| Component | Stack | Port | Domain |
-|-----------|-------|------|--------|
-| **TeamEase** | Nuxt 3, Vue 3, TypeScript, Tailwind CSS, Pinia | 3000 | `teamease.intraworx.cloud` |
-
-Mobile-first PWA for employee onboarding workflows. Offline-capable for unreliable networks. Calls `employees-service` onboarding API. Sentry error tracking.
-
-### 6.15 PayrollGuard
+### 6.10 PayrollGuard
 
 | Component | Stack | Port | Domain |
 |-----------|-------|------|--------|
@@ -419,7 +375,7 @@ Mobile-first PWA for employee onboarding workflows. Offline-capable for unreliab
 
 Secure payroll data backup — auto-syncs from on-premise Windows systems to AWS S3 with AES-256 encryption, versioning, audit logging. Google SSO via Cognito.
 
-### 6.16 TapCard System (IoT)
+### 6.11 TapCard System (IoT)
 
 | Component | Stack | Domain |
 |-----------|-------|--------|
@@ -427,7 +383,7 @@ Secure payroll data backup — auto-syncs from on-premise Windows systems to AWS
 
 Hardware firmware for RFID card readers installed in shuttles. Employees tap cards; data is hashed (SHA256 + salt) and sent via HTTPS to the Shuttle Management backend. WiFi-based with offline resilience.
 
-### 6.17 IntraWorX Notifications Service
+### 6.12 IntraWorX Notifications Service
 
 | Component | Details |
 |-----------|---------|
@@ -466,13 +422,11 @@ Each service gets an isolated database with a dedicated app user (least-privileg
 | `wellness` | Wellness Center |
 | `clinic` | Wellness Center Clinic |
 | `intraworx_backend` | IntraWorX Backend (Fastify/Prisma) |
-| `cheetahhub` | CheetahHub |
 | `shuttle_management` | Shuttle Management |
 | `dailyflash` | DailyFlash |
 | `seatingmap` | Automated Seating Map |
 | `grind` | The Grind |
 | `zimstat` | ZimStat |
-| `buzzai` | Buzz AI |
 
 #### Database Provisioner Lambda
 
@@ -520,7 +474,6 @@ Some services use external database providers:
 | Service | Provider | Details |
 |---------|----------|---------|
 | BusyBee | Supabase | External PostgreSQL + Realtime + Auth |
-| CorePTO | Neon PostgreSQL | Serverless Postgres (eu-central-1) |
 
 ---
 
@@ -568,8 +521,6 @@ The ALB routes traffic by hostname to the appropriate ECS service target group:
 |----------|------|----------------|
 | 8 | `intraworx.cloud` | Auth Portal |
 | 10 | `employees.intraworx.cloud` | Employees Service |
-| 12 | `cheetahhub-api.intraworx.cloud` | CheetahHub Backend |
-| 13 | `cheetahhub.intraworx.cloud` | CheetahHub Frontend |
 | 115 | `api.shuttle.intraworx.cloud` | Shuttle Backend |
 | 116 | `shuttle.intraworx.cloud` | Shuttle Frontend |
 | 117 | `api.clinic.intraworx.cloud` | Clinic Microservice |
@@ -578,7 +529,6 @@ The ALB routes traffic by hostname to the appropriate ECS service target group:
 | 122 | `api.thegrind.intraworx.cloud` | Grind Backend |
 | 123 | `thegrind.intraworx.cloud` | Grind Frontend |
 | 125 | `zimstat.intraworx.cloud` | ZimStat |
-| 127 | `beecompliant.intraworx.cloud` | BeeCompliant |
 
 ### 8.4 DNS (Route 53)
 
@@ -627,8 +577,6 @@ All sensitive credentials are stored in **AWS Secrets Manager** with KMS encrypt
 | SES SMTP Credentials | Email sending auth |
 | Redis Auth Token | ElastiCache auth + URL |
 | Shuttle Secrets | ESP32 API key, hash salt |
-| CheetahHub Secrets | Google OAuth, service account |
-| BeeCompliant Secrets | Gemini API key |
 | BusyBee Supabase | Supabase URL + anon key |
 
 ### 9.4 GuardDuty
@@ -736,15 +684,9 @@ Terraform Plan → PR Review → Terraform Apply
 | Integration | Used By | Purpose |
 |-------------|---------|---------|
 | **Google OAuth** | Cognito | Identity provider for all users |
-| **Google Sheets API** | DailyFlash, BeeCompliant, CorePTO | Data source for reports and compliance |
-| **Google Drive API** | CheetahHub | Document access via service account |
 | **HubSpot CRM** | BusyBee, ZimStat, Employees, DailyFlash | Client relationship data |
-| **Freshservice** | Buzz AI, Employees | IT ticketing and knowledge base |
-| **OpenAI** | Buzz AI | LLM for ticket analysis |
-| **Anthropic Claude** | Buzz AI | Alternative LLM |
-| **Google Gemini** | BeeCompliant | AI-powered compliance insights |
+| **Freshservice** | Employees | IT ticketing and knowledge base |
 | **Supabase** | BusyBee | External database + auth + realtime |
-| **Neon PostgreSQL** | CorePTO | Serverless external database |
 | **Calendly** | DailyFlash | Meeting scheduling |
 | **AWS SES** | Platform-wide | Transactional email |
 
@@ -771,20 +713,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 
 ---
 
-## 14. Cost Management
-
-| Setting | Value |
-|---------|-------|
-| Monthly Forecast | $893 |
-| Budget Allocation | RDS 30%, EC2 40%, ElastiCache 10%, Other 20% |
-| Alert Thresholds | 80%, 90%, 100% actual + 100% forecasted |
-| Notifications | `devops@zimworx.com` |
-| Cost & Usage Reports | Enabled (S3) |
-| Spot Instances | Used for non-critical services |
-
----
-
-## 15. Inter-Service Communication Map
+## 14. Inter-Service Communication Map
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
@@ -850,12 +779,12 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 │  Integrations: HubSpot CRM, Freshservice, Cognito JWT                               │
 │                                                                                     │
 │  Consumed by: Auth Portal (all modules), Wellness Center, Shuttle,                  │
-│  The Grind, Seating Map, TeamEase, BusyBee                                          │
+│  The Grind, Seating Map, BusyBee                                          │
 └──┬─────────┬─────────┬─────────┬─────────┬──────────────┬──────────────────────────-┘
    │         │         │         │         │              │
    ▼         ▼         ▼         ▼         ▼              ▼
 ┌────────┐┌────────┐┌────────┐┌────────┐┌──────────────┐┌──────────────────────┐
-│Wellness││Shuttle ││The     ││Seating ││ TeamEase     ││ BusyBee ERP          │
+│Wellness││Shuttle ││The     ││Seating ││ BusyBee ERP          │
 │Center  ││Mgmt    ││Grind   ││Map     ││              ││ Auth: Supabase       │
 │        ││        ││        ││        ││ Submodules:  ││ (not SSO yet)        │
 │Integr: ││Integr: ││Integr: ││Integr: ││ • Onboarding ││                      │
@@ -864,13 +793,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 │• Cognit││• SES   ││• Promet││        ││ • Offboarding││ • SME Hub            │
 │• Promet││• Cognit││        ││        ││              ││ • Offboarding        │
 │• Celery││• WS    ││        ││        ││ Integr:      ││ • Reporting          │
-│        ││        ││        ││        ││ • Emp Svc    ││                      │
-│        ││        ││        ││        ││ • Cognito JWT││ Integr:              │
-│        ││        ││        ││        ││ • Sentry     ││ • Emp Svc            │
-│        ││        ││        ││        ││ • Offline PWA││ • HubSpot CRM        │
-└────────┘└───┬────┘└────────┘└────────┘└──────────────┘│ • Supabase DB        │
-              │                                         │ • SES Email          │
-              ▲  RFID tap data (SHA256 + HTTPS)         └──────────────────────┘
+│        ││        ││        ││        ││ • HubSpot CRM        │
               │
      ┌────────┴────────┐
      │ TapCard ESP32   │
@@ -885,28 +808,17 @@ The platform has a **designed but currently disabled** DR configuration (for cos
   │  Employees Service directly)                                                      │
   └───────────────────────────────────────────────────────────────────────────────────┘
 
-┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-│ DailyFlash     │ │ ZimStat        │ │ Buzz AI        │ │ CheetahHub     │
-│ (Reports)      │ │ (Demographics) │ │ (IT Support)   │ │ (Documents)    │
-│                │ │                │ │                │ │                │
-│ Integrations:  │ │ Integrations:  │ │ Integrations:  │ │ Integrations:  │
-│ • HubSpot CRM  │ │ • HubSpot CRM  │ │ • Freshservice │ │ • Google Drive │
-│ • Google Sheets│ │ • MapLibre GL  │ │ • OpenAI       │ │ • Google Svc   │
-│ • Celery/Redis │ │ • Cognito JWT  │ │ • Claude AI    │ │   Account      │
-│ • SES Email    │ │                │ │ • ChromaDB     │ │ • Cognito JWT  │
-│                │ └────────────────┘ │ • Cognito JWT  │ └────────────────┘
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ DailyFlash     │ │ ZimStat        │ │ PayrollGuard   │
+│ (Reports)      │ │ (Demographics) │ │ (Backup)       │
+│                │ │                │ │                │
+│ Integrations:  │ │ Integrations:  │ │ Integrations:  │
+│ • HubSpot CRM  │ │ • HubSpot CRM  │ │ • AWS S3 (KMS) │
+│ • Google Sheets│ │ • MapLibre GL  │ │ • CloudFront   │
+│ • Celery/Redis │ │ • Cognito JWT  │ │ • Cognito SSO  │
+│ • SES Email    │ │                │ │ • PowerShell   │
+│                │ └────────────────┘ │   Sync Client  │
 └────────────────┘                    └────────────────┘
-┌────────────────┐ 
-│ PayrollGuard   │ 
-│ (Backup)       │ 
-│                │ 
-│ Integrations:  │ 
-│ • AWS S3 (KMS) │ 
-│ • CloudFront   │
-│ • Cognito SSO  │ 
-│ • PowerShell   │ 
-│   Sync Client  │
-└────────────────┘
 ```
 
 ### Data Flow Summary
@@ -915,7 +827,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 |--------|--------|----------|---------|
 | Auth Portal | All Services | JWT (URL param) | SSO token passing |
 | Auth Portal (all internal modules) | Employees Service | REST API (via IntraWorX Backend) | Team member data for CS, FunWorX, Wellness, Philanthropy, Facilities |
-| Wellness Center, Shuttle, Grind, Seating Map, TeamEase | Employees Service | REST API + Cognito JWT | Team member data lookup |
+| Wellness Center, Shuttle, Grind, Seating Map | Employees Service | REST API + Cognito JWT | Team member data lookup |
 | BusyBee | Employees Service | REST API (Supabase Auth) | Team member data lookup (not SSO — uses Supabase Auth) |
 | TapCard ESP32 | Shuttle Backend | HTTPS (SHA256 hash) | RFID boarding data |
 | Lambda Processor | SES | AWS SDK | Email notifications |
@@ -924,10 +836,7 @@ The platform has a **designed but currently disabled** DR configuration (for cos
 | Services | S3 | AWS SDK (HTTPS) | File storage |
 | DailyFlash | Google Sheets, HubSpot | HTTPS API | Report data aggregation |
 | ZimStat | HubSpot CRM | HTTPS API | Client demographics data |
-| DailyFlash, BeeCompliant | Google Sheets | HTTPS API | External data source |
-| CheetahHub | Google Drive | HTTPS API | Document access |
-| BusyBee, ZimStat, DailyFlash, Employees | HubSpot | HTTPS API | CRM data sync |
-| Buzz AI | OpenAI / Claude | HTTPS API | AI inference |
+| DailyFlash, ZimStat | HubSpot | HTTPS API | CRM data sync |
 
 ---
 

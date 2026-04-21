@@ -93,27 +93,28 @@ Every employee logs in once through Google and immediately has access to the ser
 │  Integrations: HubSpot CRM, Freshservice, Cognito JWT                               │
 │                                                                                     │
 │  Consumed by: Auth Portal (all modules), Wellness Center, Shuttle,                  │
-│  The Grind, Seating Map, TeamEase, BusyBee                                          │
+│  The Grind, Seating Map, BusyBee                                          │
 └──┬─────────┬─────────┬─────────┬─────────┬──────────────┬──────────────────────────-┘
    │         │         │         │         │              │
    ▼         ▼         ▼         ▼         ▼              ▼
 ┌────────┐┌────────┐┌────────┐┌────────┐┌──────────────┐┌──────────────────────┐
-│Wellness││Shuttle ││The     ││Seating ││ TeamEase     ││ BusyBee ERP          │
-│Center  ││Mgmt    ││Grind   ││Map     ││              ││ Auth: Supabase       │
-│        ││        ││        ││        ││ Submodules:  ││ (not SSO yet)        │
-│Integr: ││Integr: ││Integr: ││Integr: ││ • Onboarding ││                      │
-│• Emp Sv││• Emp Sv││• Emp Sv││• Emp Sv││ • TM Data    ││ Submodules:          │
-│• SES   ││• RFID  ││• Cognit││• Cognit││   Management ││ • Client & TM Mgmt   │
-│• Cognit││• SES   ││• Promet││        ││ • Offboarding││ • SME Hub            │
-│• Promet││• Cognit││        ││        ││              ││ • Offboarding        │
-│• Celery││• WS    ││        ││        ││ Integr:      ││ • Reporting          │
-│        ││        ││        ││        ││ • Emp Svc    ││                      │
-│        ││        ││        ││        ││ • Cognito JWT││ Integr:              │
-│        ││        ││        ││        ││ • Sentry     ││ • Emp Svc            │
-│        ││        ││        ││        ││ • Offline PWA││ • HubSpot CRM        │
-└────────┘└───┬────┘└────────┘└────────┘└──────────────┘│ • Supabase DB        │
-              │                                         │ • SES Email          │
-              ▲  RFID tap data (SHA256 + HTTPS)         └──────────────────────┘
+│Wellness││Shuttle ││The     ││Seating ││ BusyBee ERP          │
+│Center  ││Mgmt    ││Grind   ││Map     ││ Auth: Supabase       │
+│        ││        ││        ││        ││ (not SSO yet)        │
+│Integr: ││Integr: ││Integr: ││Integr: ││                      │
+│• Emp Sv││• Emp Sv││• Emp Sv││• Emp Sv││ Submodules:          │
+│• SES   ││• RFID  ││• Cognit││• Cognit││ • Client & TM Mgmt   │
+│• Cognit││• SES   ││• Promet││        ││ • SME Hub            │
+│• Promet││• Cognit││        ││        ││ • Offboarding        │
+│• Celery││• WS    ││        ││        ││ • Reporting          │
+│        ││        ││        ││        ││                      │
+│        ││        ││        ││        ││ Integr:              │
+│        ││        ││        ││        ││ • Emp Svc            │
+│        ││        ││        ││        ││ • HubSpot CRM        │
+│        ││        ││        ││        ││ • Supabase DB        │
+└────────┘└───┬────┘└────────┘└────────┘│ • SES Email          │
+              │                         └──────────────────────┘
+              ▲  RFID tap data (SHA256 + HTTPS)
               │
      ┌────────┴────────┐
      │ TapCard ESP32   │
@@ -128,25 +129,17 @@ Every employee logs in once through Google and immediately has access to the ser
   │  Employees Service directly)                                                      │
   └───────────────────────────────────────────────────────────────────────────────────┘
 
-┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-│ DailyFlash     │ │ ZimStat        │ │ Buzz AI        │ │ CheetahHub     │
-│ (Reports)      │ │ (Demographics) │ │ (IT Support)   │ │ (Documents)    │
-│                │ │                │ │                │ │                │
-│ Integrations:  │ │ Integrations:  │ │ Integrations:  │ │ Integrations:  │
-│ • HubSpot CRM  │ │ • HubSpot CRM  │ │ • Freshservice │ │ • Google Drive │
-│ • Google Sheets│ │ • MapLibre GL  │ │ • OpenAI       │ │ • Google Svc   │
-│ • Celery/Redis │ │ • Cognito JWT  │ │ • Claude AI    │ │   Account      │
-│ • SES Email    │ │                │ │ • ChromaDB     │ │ • Cognito JWT  │
-│                │ └────────────────┘ │ • Cognito JWT  │ └────────────────┘
-└────────────────┘                    └────────────────┘
-┌────────────────┐ 
-│ PayrollGuard   │ 
-│ (Backup)       │ 
-│                │ 
-│ Integrations:  │ 
-│ • AWS S3 (KMS) │ 
-│ • CloudFront   │
-│ • Cognito SSO  │ 
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ DailyFlash     │ │ ZimStat        │ │ PayrollGuard   │
+│ (Reports)      │ │ (Demographics) │ │ (Backup)       │
+│                │ │                │ │                │
+│ Integrations:  │ │ Integrations:  │ │ Integrations:  │
+│ • HubSpot CRM  │ │ • HubSpot CRM  │ │ • AWS S3 (KMS) │
+│ • Google Sheets│ │ • MapLibre GL  │ │ • CloudFront   │
+│ • Celery/Redis │ │ • Cognito JWT  │ │ • Cognito SSO  │
+│ • SES Email    │ │                │ │ • PowerShell   │
+│                │ └────────────────┘ │   Sync Client  │
+└────────────────┘                    └────────────────┘ 
 │ • PowerShell   │ 
 │   Sync Client  │
 └────────────────┘
@@ -170,7 +163,6 @@ Every employee logs in once through Google and immediately has access to the ser
 | **Wellness Center** | Medical records, appointments, pharmacy, patient management | `clinic.intraworx.cloud` |
 | **Shuttle Management** | Transport booking, RFID boarding, route management, automated billing | `shuttle.intraworx.cloud` |
 | **The Grind** | Internal café — menu, POS orders, inventory, promotions | `thegrind.intraworx.cloud` |
-| **TeamEase** | Employee onboarding workflows (mobile-first, works offline) | `teamease.intraworx.cloud` |
 
 ### Internal Modules (within Auth Portal)
 
@@ -189,16 +181,12 @@ Every employee logs in once through Google and immediately has access to the ser
 | **DailyFlash** | Automated daily business reports with PDF email distribution | `dailyflash.intraworx.cloud` |
 | **ZimStat** | Client demographics dashboard with US heat map visualization | `zimstat.intraworx.cloud` |
 | **BusyBee** | ERP — client relationships, team management, sales, training, PTO | `busybee.intraworx.cloud` |
-| **BeeCompliant** | Mobile device compliance tracking and reporting | `beecompliant.intraworx.cloud` |
-| **CorePTO** | Leave request management with payroll integration | `corepto.intraworx.cloud` |
 | **PayrollGuard** | Secure payroll data backup from on-premise to cloud | `payroll.intraworx.cloud` |
 
 ### Specialized
 
 | Service | What It Does | Domain |
 |---------|-------------|--------|
-| **Buzz AI** | AI-powered IT support agent (learns from Freshservice tickets) | `buzzai.intraworx.cloud` |
-| **CheetahHub** | Internal Google Drive document viewer | `cheetahhub.intraworx.cloud` |
 | **Seating Map** | Multi-site floor plans and seat assignments | `seatingmap.intraworx.cloud` |
 | **TapCard (IoT)** | ESP32 RFID readers in shuttles for contactless boarding | Hardware |
 
@@ -249,7 +237,7 @@ Every employee logs in once through Google and immediately has access to the ser
 | **Event-Driven Notifications** | SNS → SQS → Lambda → SES email pipeline for cross-service notifications |
 | **IoT → API** | ESP32 devices send encrypted RFID data to Shuttle backend over HTTPS |
 | **Shared Database** | All services share one PostgreSQL RDS instance, but each has its own isolated database |
-| **External Data Stores** | BusyBee (Supabase), CorePTO (Neon), BeeCompliant (Google Sheets) use external DBs but still consume Employees Service |
+| **External Data Stores** | BusyBee (Supabase) uses external DB but still consumes Employees Service |
 
 ---
 
@@ -355,12 +343,9 @@ Application Load Balancer (host-based routing)
     ├── api.shuttle.intraworx.cloud ──▶ Shuttle Backend (Fastify)
     ├── thegrind.intraworx.cloud ─────▶ Grind Frontend (React)
     ├── api.thegrind.intraworx.cloud ─▶ Grind Backend (Django)
-    ├── cheetahhub.intraworx.cloud ───▶ CheetahHub Frontend (React)
     ├── seatingmap.intraworx.cloud ───▶ Seating Map Frontend (Nuxt 3)
     ├── zimstat.intraworx.cloud ──────▶ ZimStat (Nuxt 4)
-    ├── beecompliant.intraworx.cloud ─▶ BeeCompliant (React)
     ├── dailyflash.intraworx.cloud ───▶ DailyFlash Frontend (Nuxt 3)
-    ├── teamease.intraworx.cloud ─────▶ TeamEase (Nuxt 3 PWA)
     └── busybee.intraworx.cloud ──────▶ BusyBee (React)
     
     All services ──▶ PostgreSQL (private subnet, encrypted)
